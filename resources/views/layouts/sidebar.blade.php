@@ -73,6 +73,14 @@
         </li>
     @endif
 
+    @if(auth()->user()->role === 'karyawan')
+<li class="nav-item">
+    <a href="{{ route('karyawan.dashboard') }}" class="nav-link">
+        Dashboard
+    </a>
+</li>
+@endif
+
     <hr class="sidebar-divider">
 
     <!-- Logout -->

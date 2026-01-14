@@ -16,5 +16,19 @@ class AdminUserSeeder extends Seeder
             'password' => Hash::make('password'),
             'role' => 'admin'
         ]);
+        User::create([
+        'name' => 'Owner',
+        'email' => 'owner@laundry.com',
+        'password' => Hash::make('password'),
+        'role' => 'owner'
+    ]);
+
+    User::create([
+        'name' => 'Karyawan',
+        'email' => 'karyawan@laundry.com',
+        'password' => Hash::make('password'),
+        'role' => 'karyawan'
+    ]);
     }
+    
 }

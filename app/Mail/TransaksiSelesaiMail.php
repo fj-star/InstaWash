@@ -26,7 +26,7 @@ class TransaksiSelesaiMail extends Mailable
      */
     public function build()
     {
-        return $this->subject('Pesanan Laundry Anda Selesai ✅')
+        return $this->subject('Terimakasih,Pesanan Laundry Anda Selesai ✅')
             ->view('emails.transaksi_selesai');
     }
 }

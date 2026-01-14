@@ -44,6 +44,8 @@ class AuthenticatedSessionController extends Controller
         return match ($user->role) {
             'admin'     => redirect()->route('admin.dashboard')->with('success', 'Halo ' . auth()->user()->name),
             'pelanggan' => redirect()->route('pelanggan.dashboard')->with('success', 'Halo ' . auth()->user()->name),
+            'owner' => redirect('/admin/owner/dashboard')->with('success', 'Halo ' . auth()->user()->name),
+            'karyawan' => redirect('/admin/karyawan/dashboard')->with('success', 'Halo ' . auth()->user()->name),
             default     => redirect('/'),
         };
     }
