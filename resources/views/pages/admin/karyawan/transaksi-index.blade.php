@@ -42,15 +42,25 @@
                     Edit
                 </a>
 
-                @if($t->status === 'pending')
-                <form action="{{ route('karyawan.transaksi.destroy',$t->id) }}"
-                      method="POST" class="d-inline">
-                    @method('DELETE')
-        <button type="submit" class="btn btn-sm btn-danger">
-            Hapus
-        </button>
-                </form>
-                @endif
+               <form action="{{ route('karyawan.transaksi.destroy', $t->id) }}"
+      method="POST"
+      class="d-inline form-delete">
+    @csrf
+    @method('DELETE')
+
+    <button type="submit" class="btn btn-sm btn-danger">
+        Hapus
+    </button>
+</form><form action="{{ route('karyawan.transaksi.destroy', $t->id) }}"
+      method="POST"
+      class="d-inline form-delete">
+    @csrf
+    @method('DELETE')
+
+    {{-- <button type="submit" class="btn btn-sm btn-danger">
+        Hapus
+    </button> --}}
+</form>
             </td>
         </tr>
         @empty

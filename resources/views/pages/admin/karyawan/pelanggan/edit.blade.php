@@ -28,8 +28,8 @@
 
             <div class="mb-3">
                 <label>No HP</label>
-                <input type="text" name="phone"
-                       value="{{ $pelanggan->phone }}"
+                <input type="text" name="no_hp"
+                       value="{{ $pelanggan->no_hp }}"
                        class="form-control">
             </div>
 

@@ -29,7 +29,7 @@ class PelangganController extends Controller
             'name'     => 'required|string|max:255',
             'email'    => 'required|email|unique:users,email',
             'password' => 'required|min:6',
-            'phone'    => 'nullable|string|max:20',
+            'no_hp'    => 'nullable|string|max:20',
         ]);
 
         $data['password'] = Hash::make($data['password']);
@@ -52,7 +52,7 @@ class PelangganController extends Controller
         $data = $request->validate([
             'name'  => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,'.$pelanggan->id,
-            'phone' => 'nullable|string|max:20',
+            'no_hp' => 'nullable|string|max:20',
         ]);
 
         if ($request->filled('password')) {

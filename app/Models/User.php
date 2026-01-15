@@ -20,6 +20,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'no_hp',
         'role', // Tambahkan role karena digunakan untuk role-based access
     ];
 

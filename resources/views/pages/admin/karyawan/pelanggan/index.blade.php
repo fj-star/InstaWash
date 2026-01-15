@@ -26,7 +26,7 @@
                     <td>{{ $loop->iteration }}</td>
                     <td>{{ $p->name }}</td>
                     <td>{{ $p->email }}</td>
-                    <td>{{ $p->phone }}</td>
+                    <td>{{ $p->no_hp }}</td>
                     <td>
                         <a href="{{ route('karyawan.pelanggan.edit',$p->id) }}"
                            class="btn btn-sm btn-warning">Edit</a>
