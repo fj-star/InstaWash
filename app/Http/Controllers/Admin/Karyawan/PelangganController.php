@@ -3,63 +3,73 @@
 namespace App\Http\Controllers\Admin\Karyawan;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class PelangganController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        $pelanggans = User::where('role','pelanggan')
+            ->latest()
+            ->paginate(10);
+
+        return view('pages.admin.karyawan.pelanggan.index', compact('pelanggans'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        //
+        return view('pages.admin.karyawan.pelanggan.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        $data = $request->validate([
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|unique:users,email',
+            'password' => 'required|min:6',
+            'phone'    => 'nullable|string|max:20',
+        ]);
+
+        $data['password'] = Hash::make($data['password']);
+        $data['role']     = 'pelanggan';
+
+        User::create($data);
+
+        return redirect()
+            ->route('karyawan.pelanggan.index')
+            ->with('success','Pelanggan berhasil ditambahkan');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function edit(User $pelanggan)
     {
-        //
+        return view('pages.admin.karyawan.pelanggan.edit', compact('pelanggan'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    public function update(Request $request, User $pelanggan)
     {
-        //
+        $data = $request->validate([
+            'name'  => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,'.$pelanggan->id,
+            'phone' => 'nullable|string|max:20',
+        ]);
+
+        if ($request->filled('password')) {
+            $data['password'] = Hash::make($request->password);
+        }
+
+        $pelanggan->update($data);
+
+        return redirect()
+            ->route('karyawan.pelanggan.index')
+            ->with('success','Data pelanggan diperbarui');
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function destroy(User $pelanggan)
     {
-        //
-    }
+        $pelanggan->delete();
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return back()->with('success','Pelanggan berhasil dihapus');
     }
 }

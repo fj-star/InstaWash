@@ -39,7 +39,7 @@
          Transaksi
     </a>
 
-    {{-- <a href="{{ route('karyawan.pelanggan.create') }}" class="btn btn-success"> --}}
+    <a href="{{ route('karyawan.pelanggan.create') }}" class="btn btn-success">
         Pelanggan
     </a>
 </div>

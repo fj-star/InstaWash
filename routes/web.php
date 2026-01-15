@@ -21,6 +21,7 @@ use App\Http\Controllers\Pelanggan\TransaksiController as UserTransaksiControlle
 use App\Http\Controllers\Admin\Owner\DashboardController as OwnerDashboard;
 use App\Http\Controllers\Admin\Karyawan\DashboardController as KaryawanDashboard;
 use App\Http\Controllers\Admin\Karyawan\TransaksiController as KaryawanTransaksi;
+use App\Http\Controllers\Admin\Karyawan\PelangganController;
 
 // ================== UTIL ==================
 use App\Models\Transaksi;
@@ -122,6 +123,7 @@ Route::middleware(['auth','role:karyawan'])
             ->name('dashboard');
 
         Route::resource('transaksi', KaryawanTransaksi::class);
+        Route::resource('pelanggan', PelangganController::class);
     });
 
 require __DIR__.'/auth.php';

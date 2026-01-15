@@ -30,22 +30,42 @@ class TransaksiController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $data = $request->validate([
-            'user_id'      => 'required|exists:users,id',
-            'layanan_id'   => 'required|exists:layanans,id',
-            'treatment_id' => 'nullable|exists:treatments,id',
-            'berat'        => 'required|numeric|min:0.1',
-        ]);
+{
+    $data = $request->validate([
+        'user_id'      => 'required|exists:users,id',
+        'layanan_id'   => 'required|exists:layanans,id',
+        'treatment_id' => 'nullable|exists:treatments,id',
+        'berat'        => 'required|numeric|min:0.1',
+    ]);
 
-        $data['status']     = 'pending';
-        $data['created_by'] = auth()->id();
+    $layanan   = Layanan::findOrFail($data['layanan_id']);
+    $treatment = !empty($data['treatment_id'])
+        ? Treatment::find($data['treatment_id'])
+        : null;
 
-        Transaksi::create($data);
+    $hargaLayanan   = $layanan->harga * $data['berat'];
+    $hargaTreatment = $treatment ? $treatment->harga : 0;
+    $diskon         = $treatment ? $treatment->diskon : 0;
 
-        return redirect()->route('karyawan.transaksi.index')
-            ->with('success','Transaksi berhasil ditambahkan');
-    }
+    $potongan = $diskon > 0
+        ? ($hargaTreatment * ($diskon / 100))
+        : 0;
+
+    $total = $hargaLayanan + $hargaTreatment - $potongan;
+
+    $data['total_harga'] = round($total);
+    $data['status']     = 'pending';
+
+    // 🔥 FIX FINAL (WAJIB)
+    $data['created_by'] = 'admin';
+
+    Transaksi::create($data);
+
+    return redirect()
+        ->route('karyawan.transaksi.index')
+        ->with('success','Transaksi berhasil ditambahkan');
+}
+
 
     public function edit(Transaksi $transaksi)
     {
@@ -67,9 +87,25 @@ class TransaksiController extends Controller
             'status'       => 'required|in:pending,proses,selesai',
         ]);
 
+        $layanan   = Layanan::findOrFail($data['layanan_id']);
+        $treatment = !empty($data['treatment_id'])
+            ? Treatment::find($data['treatment_id'])
+            : null;
+
+        $hargaLayanan   = $layanan->harga * $data['berat'];
+        $hargaTreatment = $treatment ? $treatment->harga : 0;
+        $diskon         = $treatment ? $treatment->diskon : 0;
+
+        $potongan = $diskon > 0
+            ? ($hargaTreatment * ($diskon / 100))
+            : 0;
+
+        $data['total_harga'] = round($hargaLayanan + $hargaTreatment - $potongan);
+
         $transaksi->update($data);
 
-        return redirect()->route('karyawan.transaksi.index')
+        return redirect()
+            ->route('karyawan.transaksi.index')
             ->with('success','Transaksi berhasil diperbarui');
     }
 
