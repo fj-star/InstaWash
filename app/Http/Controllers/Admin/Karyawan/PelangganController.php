@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers\Admin\Karyawan;
 
 use App\Http\Controllers\Controller;
@@ -11,7 +10,7 @@ class PelangganController extends Controller
 {
     public function index()
     {
-        $pelanggans = User::where('role','pelanggan')
+        $pelanggans = User::where('role', 'pelanggan')
             ->latest()
             ->paginate(10);
 
@@ -32,14 +31,17 @@ class PelangganController extends Controller
             'no_hp'    => 'nullable|string|max:20',
         ]);
 
-        $data['password'] = Hash::make($data['password']);
-        $data['role']     = 'pelanggan';
-
-        User::create($data);
+        User::create([
+            'name'     => $data['name'],
+            'email'    => $data['email'],
+            'password' => Hash::make($data['password']),
+            'no_hp'    => $data['no_hp'] ?? null,
+            'role'     => 'pelanggan',
+        ]);
 
         return redirect()
             ->route('karyawan.pelanggan.index')
-            ->with('success','Pelanggan berhasil ditambahkan');
+            ->with('success', 'Pelanggan berhasil ditambahkan');
     }
 
     public function edit(User $pelanggan)
@@ -51,7 +53,7 @@ class PelangganController extends Controller
     {
         $data = $request->validate([
             'name'  => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,'.$pelanggan->id,
+            'email' => 'required|email|unique:users,email,' . $pelanggan->id,
             'no_hp' => 'nullable|string|max:20',
         ]);
 
@@ -63,13 +65,13 @@ class PelangganController extends Controller
 
         return redirect()
             ->route('karyawan.pelanggan.index')
-            ->with('success','Data pelanggan diperbarui');
+            ->with('success', 'Data pelanggan diperbarui');
     }
 
     public function destroy(User $pelanggan)
     {
         $pelanggan->delete();
 
-        return back()->with('success','Pelanggan berhasil dihapus');
+        return back()->with('success', 'Pelanggan berhasil dihapus');
     }
 }

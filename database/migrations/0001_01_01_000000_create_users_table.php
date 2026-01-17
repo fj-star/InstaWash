@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
+            $table->string('no_hp')->unique();
             $table->enum('role', ['admin','owner','karyawan','pelanggan'])->default('pelanggan');
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
@@ -28,7 +29,7 @@ return new class extends Migration
             $table->timestamp('created_at')->nullable();
         });
 
-        
+
     }
 
     /**
@@ -38,6 +39,6 @@ return new class extends Migration
     {
         Schema::dropIfExists('users');
         Schema::dropIfExists('password_reset_tokens');
-       
+
     }
 };

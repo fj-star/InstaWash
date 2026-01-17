@@ -19,6 +19,7 @@ use App\Http\Controllers\Pelanggan\TransaksiController as UserTransaksiControlle
 
 // ================== OWNER & KARYAWAN ==================
 use App\Http\Controllers\Admin\Owner\DashboardController as OwnerDashboard;
+use App\Http\Controllers\Admin\Owner\LaporanController as OwnerLaporan;
 use App\Http\Controllers\Admin\Karyawan\DashboardController as KaryawanDashboard;
 use App\Http\Controllers\Admin\Karyawan\TransaksiController as KaryawanTransaksi;
 use App\Http\Controllers\Admin\Karyawan\PelangganController;
@@ -103,11 +104,26 @@ Route::prefix('pelanggan')->name('pelanggan.')->middleware(['auth', 'role:pelang
 | OWNER
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth','role:owner'])
+/*
+|--------------------------------------------------------------------------
+| OWNER
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'role:owner'])
     ->prefix('admin/owner')
+    ->name('owner.')
     ->group(function () {
-        Route::get('/dashboard', [OwnerDashboard::class, 'index']);
+
+        Route::get('/dashboard', [OwnerDashboard::class, 'index'])
+            ->name('dashboard');
+
+        Route::get('/laporan', [OwnerLaporan::class, 'index'])
+            ->name('laporan.index');
+
+        Route::get('/laporan/pdf', [OwnerLaporan::class, 'pdf'])
+            ->name('laporan.pdf');
     });
+
 
 /*
 |--------------------------------------------------------------------------

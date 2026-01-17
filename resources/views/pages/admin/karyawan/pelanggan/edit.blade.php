@@ -15,21 +15,21 @@
             <div class="mb-3">
                 <label>Nama</label>
                 <input type="text" name="name"
-                       value="{{ $pelanggan->name }}"
+                       value="{{ old('name', $pelanggan->name) }}"
                        class="form-control" required>
             </div>
 
             <div class="mb-3">
                 <label>Email</label>
                 <input type="email" name="email"
-                       value="{{ $pelanggan->email }}"
+                       value="{{ old('email', $pelanggan->email) }}"
                        class="form-control" required>
             </div>
 
             <div class="mb-3">
                 <label>No HP</label>
                 <input type="text" name="no_hp"
-                       value="{{ $pelanggan->no_hp }}"
+                       value="{{ old('no_hp', $pelanggan->no_hp) }}"
                        class="form-control">
             </div>
 
@@ -40,7 +40,8 @@
             </div>
 
             <button class="btn btn-primary">Update</button>
-            <a href="{{ route('karyawan.pelanggan.index') }}" class="btn btn-secondary">Kembali</a>
+            <a href="{{ route('karyawan.pelanggan.index') }}"
+               class="btn btn-secondary">Kembali</a>
         </form>
     </div>
 </div>
