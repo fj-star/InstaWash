@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Admin\Owner;
+namespace App\Http\Controllers\Owner;
 
 use App\Http\Controllers\Controller;
 use App\Models\Transaksi;

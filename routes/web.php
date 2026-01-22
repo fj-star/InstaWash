@@ -1,70 +1,59 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
-
-// ================== ADMIN ==================
-use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\LaporanController;
-use App\Http\Controllers\Admin\LayananController;
-use App\Http\Controllers\Admin\LogAktivitasController;
-use App\Http\Controllers\Admin\PelangganController as AdminPelangganController;
-use App\Http\Controllers\Admin\TransaksiController as AdminTransaksiController;
-use App\Http\Controllers\Admin\TreatmentController;
-
-// ================== PELANGGAN ==================
-use App\Http\Controllers\Pelanggan\DashboardController as PelangganDashboardController;
-use App\Http\Controllers\Pelanggan\PelangganController as UserPelangganController;
-use App\Http\Controllers\Pelanggan\TransaksiController as UserTransaksiController;
-
-// ================== OWNER & KARYAWAN ==================
-use App\Http\Controllers\Admin\Owner\DashboardController as OwnerDashboard;
-use App\Http\Controllers\Admin\Owner\LaporanController as OwnerLaporan;
-use App\Http\Controllers\Admin\Karyawan\DashboardController as KaryawanDashboard;
-use App\Http\Controllers\Admin\Karyawan\TransaksiController as KaryawanTransaksi;
-use App\Http\Controllers\Admin\Karyawan\PelangganController;
-
-// ================== UTIL ==================
-use App\Models\Transaksi;
-use App\Mail\TransaksiSelesaiMail;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Http;
+use App\Http\Controllers\ProfileController;
 
 /*
 |--------------------------------------------------------------------------
-| TEST ROUTES
+| ADMIN
 |--------------------------------------------------------------------------
 */
-Route::get('/test-fonnte', function () {
-    $res = Http::withHeaders([
-        'Authorization' => config('services.fonnte.token'),
-    ])->post('https://api.fonnte.com/send', [
-        'target'  => '6285865812892',
-        'message' => 'Test kirim notifikasi dari Laravel 🚀',
-    ]);
+use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
+use App\Http\Controllers\Admin\LaporanController as AdminLaporan;
+use App\Http\Controllers\Admin\LayananController;
+use App\Http\Controllers\Admin\LogAktivitasController;
+use App\Http\Controllers\Admin\PelangganController as AdminPelanggan;
+use App\Http\Controllers\Admin\TransaksiController as AdminTransaksi;
+use App\Http\Controllers\Admin\TreatmentController;
+use App\Http\Controllers\Admin\KaryawanController;
 
-    return $res->json();
-});
+/*
+|--------------------------------------------------------------------------
+| OWNER
+|--------------------------------------------------------------------------
+*/
+use App\Http\Controllers\Owner\DashboardController as OwnerDashboard;
+use App\Http\Controllers\Owner\LaporanController as OwnerLaporan;
 
-Route::get('/test-email', function () {
-    $transaksi = Transaksi::with('user','layanan')->first();
-    Mail::to('alamat_email_tujuan@gmail.com')
-        ->send(new TransaksiSelesaiMail($transaksi));
+/*
+|--------------------------------------------------------------------------
+| KARYAWAN
+|--------------------------------------------------------------------------
+*/
+use App\Http\Controllers\Karyawan\DashboardController as KaryawanDashboard;
+use App\Http\Controllers\Karyawan\TransaksiController as KaryawanTransaksi;
+use App\Http\Controllers\Karyawan\PelangganController as KaryawanPelanggan;
 
-    return "Email test terkirim ✅";
-});
+/*
+|--------------------------------------------------------------------------
+| PELANGGAN
+|--------------------------------------------------------------------------
+*/
+use App\Http\Controllers\Pelanggan\DashboardController as PelangganDashboard;
+use App\Http\Controllers\Pelanggan\TransaksiController as PelangganTransaksi;
 
+/*
+|--------------------------------------------------------------------------
+| PUBLIC
+|--------------------------------------------------------------------------
+*/
 Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
 /*
 |--------------------------------------------------------------------------
-| PROFILE
+| PROFILE (ALL AUTH USER)
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->group(function () {
@@ -78,68 +67,74 @@ Route::middleware('auth')->group(function () {
 | ADMIN
 |--------------------------------------------------------------------------
 */
-Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::resource('pelanggans', AdminPelangganController::class);
-    Route::resource('layanans', LayananController::class);
-    Route::resource('treatments', TreatmentController::class);
-    Route::resource('transaksi', AdminTransaksiController::class);
-    Route::resource('log-aktivitas', LogAktivitasController::class)->only(['index', 'destroy']);
-    Route::resource('laporan', LaporanController::class)->only(['index', 'destroy']);
-    Route::get('/laporan/cetak', [LaporanController::class, 'cetakPdf'])->name('laporan.cetak.pdf');
-});
-
-/*
-|--------------------------------------------------------------------------
-| PELANGGAN
-|--------------------------------------------------------------------------
-*/
-Route::prefix('pelanggan')->name('pelanggan.')->middleware(['auth', 'role:pelanggan'])->group(function () {
-    Route::get('/dashboard', [PelangganDashboardController::class, 'index'])->name('dashboard');
-    Route::resource('transaksi', UserTransaksiController::class);
-});
-
-/*
-|--------------------------------------------------------------------------
-| OWNER
-|--------------------------------------------------------------------------
-*/
-/*
-|--------------------------------------------------------------------------
-| OWNER
-|--------------------------------------------------------------------------
-*/
-Route::middleware(['auth', 'role:owner'])
-    ->prefix('admin/owner')
-    ->name('owner.')
+Route::prefix('admin')
+    ->name('admin.')
+    ->middleware(['auth','role:admin'])
     ->group(function () {
 
-        Route::get('/dashboard', [OwnerDashboard::class, 'index'])
-            ->name('dashboard');
+        Route::get('/dashboard', [AdminDashboard::class, 'index'])->name('dashboard');
 
-        Route::get('/laporan', [OwnerLaporan::class, 'index'])
-            ->name('laporan.index');
+        Route::resource('pelanggans', AdminPelanggan::class);
+        Route::resource('layanans', LayananController::class);
+        Route::resource('treatments', TreatmentController::class);
+        Route::resource('transaksi', AdminTransaksi::class);
+        Route::resource('karyawan', KaryawanController::class);
 
-        Route::get('/laporan/pdf', [OwnerLaporan::class, 'pdf'])
-            ->name('laporan.pdf');
+        Route::resource('log-aktivitas', LogAktivitasController::class)
+            ->only(['index','destroy']);
+
+        Route::resource('laporan', AdminLaporan::class)
+            ->only(['index','destroy']);
+
+        Route::get('laporan/cetak', [AdminLaporan::class, 'cetakPdf'])
+            ->name('laporan.cetak.pdf');
     });
 
+/*
+|--------------------------------------------------------------------------
+| OWNER
+|--------------------------------------------------------------------------
+*/
+Route::prefix('owner')
+    ->name('owner.')
+    ->middleware(['auth','role:owner'])
+    ->group(function () {
+
+        Route::get('/dashboard', [OwnerDashboard::class, 'index'])->name('dashboard');
+
+        Route::get('/laporan', [OwnerLaporan::class, 'index'])->name('laporan.index');
+        Route::get('/laporan/pdf', [OwnerLaporan::class, 'pdf'])->name('laporan.pdf');
+    });
 
 /*
 |--------------------------------------------------------------------------
 | KARYAWAN
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth','role:karyawan'])
-    ->prefix('admin/karyawan')
+Route::prefix('karyawan')
     ->name('karyawan.')
+    ->middleware(['auth','role:karyawan'])
     ->group(function () {
 
-        Route::get('/dashboard', [KaryawanDashboard::class, 'index'])
-            ->name('dashboard');
+        Route::get('/dashboard', [KaryawanDashboard::class, 'index'])->name('dashboard');
 
         Route::resource('transaksi', KaryawanTransaksi::class);
-        Route::resource('pelanggan', PelangganController::class);
+        Route::resource('pelanggan', KaryawanPelanggan::class);
+    });
+
+/*
+|--------------------------------------------------------------------------
+| PELANGGAN
+|--------------------------------------------------------------------------
+*/
+Route::prefix('pelanggan')
+    ->name('pelanggan.')
+    ->middleware(['auth','role:pelanggan'])
+    ->group(function () {
+
+        Route::get('/dashboard', [PelangganDashboard::class, 'index'])->name('dashboard');
+
+        Route::resource('transaksi', PelangganTransaksi::class);
     });
 
 require __DIR__.'/auth.php';

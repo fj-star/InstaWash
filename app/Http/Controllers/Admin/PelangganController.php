@@ -34,6 +34,7 @@ class PelangganController extends Controller
         $user = User::create([
             'name' => $request->nama,
             'email' => $request->email,
+            'no_hp'    => $request->no_hp,
             'password' => Hash::make('password123'), // default password
             'role' => 'pelanggan',
         ]);
@@ -69,6 +70,7 @@ class PelangganController extends Controller
         $pelanggan->user->update([
             'name' => $request->nama,
             'email' => $request->email,
+            'no_hp' => $request->no_hp
         ]);
 
         // Update tabel pelanggans

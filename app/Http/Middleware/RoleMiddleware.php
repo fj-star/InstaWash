@@ -8,12 +8,17 @@ use Symfony\Component\HttpFoundation\Response;
 
 class RoleMiddleware
 {
-    public function handle(Request $request, Closure $next, $role): Response
-    {
-        if ($request->user()->role !== $role) {
-            return redirect('/'); 
-        }
-        return $next($request);
+    public function handle($request, Closure $next, ...$roles)
+{
+    
+    if (!auth()->check()) {
+        return redirect()->route('login');
     }
-}
 
+    if (!in_array(auth()->user()->role, $roles)) {
+        abort(403, 'ANDA TIDAK MEMILIKI AKSES');
+    }
+
+    return $next($request);
+}
+}

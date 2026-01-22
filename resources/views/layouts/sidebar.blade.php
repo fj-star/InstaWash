@@ -2,8 +2,19 @@
 <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
     <!-- BRAND -->
+    @php
+    $role = auth()->user()->role;
+@endphp
     <a class="sidebar-brand d-flex align-items-center justify-content-center"
-       href="#">
+       href="<a class="sidebar-brand d-flex align-items-center justify-content-center"
+   href="
+    @if($role === 'admin') {{ route('admin.dashboard') }}
+    @elseif($role === 'karyawan') {{ route('karyawan.dashboard') }}
+    @elseif($role === 'owner') {{ route('owner.dashboard') }}
+    @elseif($role === 'pelanggan') {{ route('pelanggan.dashboard') }}
+    @else #
+    @endif
+   ">
 
         <div class="sidebar-brand-icon d-flex align-items-center">
             <img src="{{ asset('assets/img/logo.jpg') }}"
@@ -53,6 +64,12 @@
             <a class="nav-link" href="{{ route('admin.pelanggans.index') }}">
                 <i class="fas fa-fw fa-users"></i>
                 <span>Pelanggan</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{{ route('admin.karyawan.index') }}">
+                <i class="fas fa-fw fa-users"></i>
+                <span>Karyawan</span>
             </a>
         </li>
 

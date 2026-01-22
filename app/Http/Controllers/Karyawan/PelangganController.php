@@ -1,5 +1,5 @@
 <?php
-namespace App\Http\Controllers\Admin\Karyawan;
+namespace App\Http\Controllers\Karyawan;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;

@@ -24,28 +24,20 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
-        // Autentikasi kredensial
+        // Autentikasi user
         $request->authenticate();
 
-        // Regenerasi session setelah login untuk keamanan
+        // Regenerasi session (WAJIB untuk security)
         $request->session()->regenerate();
 
-        // Ambil data user yang sudah login
-        $user = Auth::user(); // lebih aman dari $request->user()
+        $user = auth()->user();
 
-        // Pastikan user ada
-        if (!$user) {
-            return back()->withErrors([
-                'email' => 'Login gagal. Silakan coba lagi.',
-            ])->onlyInput('email');
-        }
-
-        // Redirect sesuai role
+        // Redirect berdasarkan role
         return match ($user->role) {
             'admin'     => redirect()->route('admin.dashboard')->with('success', 'Halo ' . auth()->user()->name),
+            'owner'     => redirect()->route('owner.dashboard')->with('success', 'Halo ' . auth()->user()->name),
+            'karyawan'  => redirect()->route('karyawan.dashboard')->with('success', 'Halo ' . auth()->user()->name),
             'pelanggan' => redirect()->route('pelanggan.dashboard')->with('success', 'Halo ' . auth()->user()->name),
-            'owner' => redirect('/admin/owner/dashboard')->with('success', 'Halo ' . auth()->user()->name),
-            'karyawan' => redirect('/admin/karyawan/dashboard')->with('success', 'Halo ' . auth()->user()->name),
             default     => redirect('/'),
         };
     }
@@ -55,12 +47,11 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
-        Auth::guard('web')->logout();
+        Auth::logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/login')->with('logout_success', 'Anda berhasil logout, sampai jumpa lagi!');
+        return redirect()->route('login');
     }
-    
 }
