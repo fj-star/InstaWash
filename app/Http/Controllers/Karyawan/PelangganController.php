@@ -14,12 +14,12 @@ class PelangganController extends Controller
             ->latest()
             ->paginate(10);
 
-        return view('pages.admin.karyawan.pelanggan.index', compact('pelanggans'));
+        return view('pages.karyawan.pelanggan.index', compact('pelanggans'));
     }
 
     public function create()
     {
-        return view('pages.admin.karyawan.pelanggan.create');
+        return view('pages.karyawan.pelanggan.create');
     }
 
     public function store(Request $request)
@@ -46,7 +46,7 @@ class PelangganController extends Controller
 
     public function edit(User $pelanggan)
     {
-        return view('pages.admin.karyawan.pelanggan.edit', compact('pelanggan'));
+        return view('pages.karyawan.pelanggan.edit', compact('pelanggan'));
     }
 
     public function update(Request $request, User $pelanggan)

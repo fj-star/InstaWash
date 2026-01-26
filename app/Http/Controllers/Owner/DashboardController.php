@@ -20,7 +20,7 @@ class DashboardController extends Controller
             ->orderBy('bulan')
             ->get();
 
-        return view('pages.admin.owner.dashboard', [
+        return view('pages.owner.dashboard', [
             'total_transaksi'   => Transaksi::count(),
             'total_pendapatan'  => Transaksi::sum('total_harga'),
             'transaksis'        => Transaksi::latest()->limit(10)->get(),

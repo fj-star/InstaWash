@@ -15,7 +15,6 @@
     {{-- STAT CARD --}}
     <div class="row mb-4">
 
-        {{-- TOTAL TRANSAKSI --}}
         <div class="col-md-6 mb-3 mb-md-0">
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-body">
@@ -27,7 +26,6 @@
             </div>
         </div>
 
-        {{-- TOTAL PENDAPATAN --}}
         <div class="col-md-6">
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-body">
@@ -41,17 +39,17 @@
 
     </div>
 
-    {{-- GRAFIK PENDAPATAN --}}
+    {{-- ================= GRAFIK (DI ATAS) ================= --}}
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-header bg-white">
             <h5 class="mb-0">Grafik Pendapatan {{ now()->year }}</h5>
         </div>
         <div class="card-body">
-            <canvas id="pendapatanChart" style="height:300px" ></canvas>
+            <canvas id="pendapatanChart" style="height:300px"></canvas>
         </div>
     </div>
 
-    {{-- TRANSAKSI TERAKHIR --}}
+    {{-- ================= TRANSAKSI TERAKHIR (DI BAWAH) ================= --}}
     <div class="card shadow-sm border-0">
         <div class="card-header bg-white d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Transaksi Terakhir</h5>
@@ -74,7 +72,6 @@
 
                 <tbody>
                     @forelse($transaksis as $t)
-
                         @php
                             $statusColor = match($t->status) {
                                 'pending' => 'warning',
@@ -87,19 +84,14 @@
                         <tr>
                             <td>{{ $loop->iteration }}</td>
                             <td>{{ $t->user->name ?? '-' }}</td>
-                            <td>
-                                Rp {{ number_format($t->total_harga ?? 0,0,',','.') }}
-                            </td>
+                            <td>Rp {{ number_format($t->total_harga ?? 0,0,',','.') }}</td>
                             <td>
                                 <span class="badge bg-{{ $statusColor }}">
                                     {{ ucfirst($t->status ?? '-') }}
                                 </span>
                             </td>
-                            <td>
-                                {{ optional($t->created_at)->format('d M Y') }}
-                            </td>
+                            <td>{{ optional($t->created_at)->format('d M Y') }}</td>
                         </tr>
-
                     @empty
                         <tr>
                             <td colspan="5" class="text-center text-muted py-4">
@@ -121,12 +113,7 @@
 <script>
     const rawData = @json($chartData ?? []);
 
-    // inisialisasi 12 bulan (biar ga bolong)
-    const labels = [
-        'Jan','Feb','Mar','Apr','Mei','Jun',
-        'Jul','Agu','Sep','Okt','Nov','Des'
-    ];
-
+    const labels = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
     const values = Array(12).fill(0);
 
     rawData.forEach(item => {
@@ -143,7 +130,6 @@
                 datasets: [{
                     label: 'Pendapatan',
                     data: values,
-                    backgroundColor: '#198754',
                     borderRadius: 6,
                     maxBarThickness: 40
                 }]
@@ -155,9 +141,8 @@
                     legend: { display: false },
                     tooltip: {
                         callbacks: {
-                            label: function(ctx) {
-                                return 'Rp ' + ctx.raw.toLocaleString('id-ID');
-                            }
+                            label: ctx =>
+                                'Rp ' + ctx.raw.toLocaleString('id-ID')
                         }
                     }
                 },

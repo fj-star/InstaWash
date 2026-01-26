@@ -27,7 +27,7 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
-        return view('pages.admin.karyawan.dashboard', compact(
+        return view('pages.karyawan.dashboard', compact(
             'totalHariIni',
             'pending',
             'selesai',

@@ -17,12 +17,12 @@ class TransaksiController extends Controller
             ->latest()
             ->paginate(10);
 
-        return view('pages.admin.karyawan.transaksi-index', compact('transaksis'));
+        return view('pages.karyawan.transaksi-index', compact('transaksis'));
     }
 
     public function create()
     {
-        return view('pages.admin.karyawan.transaksi-create', [
+        return view('pages.karyawan.transaksi-create', [
             'pelanggans' => User::where('role','pelanggan')->get(),
             'layanans'   => Layanan::all(),
             'treatments' => Treatment::all(),
@@ -69,7 +69,7 @@ class TransaksiController extends Controller
 
     public function edit(Transaksi $transaksi)
     {
-        return view('pages.admin.karyawan.transaksi-edit', [
+        return view('pages.karyawan.transaksi-edit', [
             'transaksi'  => $transaksi,
             'pelanggans' => User::where('role','pelanggan')->get(),
             'layanans'   => Layanan::all(),

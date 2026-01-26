@@ -39,7 +39,7 @@
             <table class="table table-bordered table-hover">
                 <thead class="table-light">
                     <tr>
-                        <th>#</th>
+                        <th>no</th>
                         <th>Tanggal</th>
                         <th>Pelanggan</th>
                         <th>Total</th>

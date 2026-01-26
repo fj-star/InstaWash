@@ -20,7 +20,7 @@
 <table>
     <thead>
         <tr>
-            <th>#</th>
+            <th>no</th>
             <th>Tanggal</th>
             <th>Pelanggan</th>
             <th>Total</th>
