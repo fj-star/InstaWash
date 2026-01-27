@@ -20,6 +20,7 @@
             <th>Treatment</th>
             <th>Berat</th>
             <th>Status</th>
+            <th>Payment</th>
             <th width="180">Aksi</th>
         </tr>
     </thead>
@@ -37,6 +38,7 @@
                 </span>
             </td>
             <td>
+                
                 <a href="{{ route('karyawan.transaksi.edit',$t->id) }}"
                    class="btn btn-sm btn-warning">
                     Edit

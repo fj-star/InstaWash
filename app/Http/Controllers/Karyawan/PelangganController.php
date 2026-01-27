@@ -29,6 +29,7 @@ class PelangganController extends Controller
             'email'    => 'required|email|unique:users,email',
             'password' => 'required|min:6',
             'no_hp'    => 'nullable|string|max:20',
+            
         ]);
 
         User::create([
@@ -37,6 +38,7 @@ class PelangganController extends Controller
             'password' => Hash::make($data['password']),
             'no_hp'    => $data['no_hp'] ?? null,
             'role'     => 'pelanggan',
+            'alamat'   => $request->alamat,
         ]);
 
         return redirect()
@@ -55,6 +57,7 @@ class PelangganController extends Controller
             'name'  => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $pelanggan->id,
             'no_hp' => 'nullable|string|max:20',
+            'alamat'   => $request->alamat,
         ]);
 
         if ($request->filled('password')) {

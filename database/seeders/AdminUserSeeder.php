@@ -14,6 +14,7 @@ class AdminUserSeeder extends Seeder
             'name' => 'Fazril',
             'email' => 'admin@example.com',
             'no_hp' => '023920139',
+            'alamat'=>'cianjur',
             'password' => Hash::make('password'),
             'role' => 'admin'
         ]);
@@ -21,6 +22,7 @@ class AdminUserSeeder extends Seeder
         'name' => 'Owner',
         'email' => 'owner@laundry.com',
         'no_hp' => '023920138',
+        'alamat'=>'cianjur',
         'password' => Hash::make('password'),
         'role' => 'owner'
     ]);
@@ -29,6 +31,7 @@ class AdminUserSeeder extends Seeder
         'name' => 'Karyawan',
         'email' => 'karyawan@laundry.com',
         'no_hp' => '023920137',
+        'alamat'=>'cianjur',
         'password' => Hash::make('password'),
         'role' => 'karyawan'
     ]);

@@ -2,7 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
-
+use App\Http\Controllers\MidtransCallbackController;
+use App\Http\Controllers\MidtransController;
 /*
 |--------------------------------------------------------------------------
 | ADMIN
@@ -50,6 +51,7 @@ use App\Http\Controllers\Pelanggan\TransaksiController as PelangganTransaksi;
 Route::get('/', function () {
     return view('welcome');
 });
+
 
 /*
 |--------------------------------------------------------------------------
@@ -131,10 +133,18 @@ Route::prefix('pelanggan')
     ->name('pelanggan.')
     ->middleware(['auth','role:pelanggan'])
     ->group(function () {
-
+    Route::get(
+    'transaksi/{transaksi}/bayar',
+    [PelangganTransaksi::class, 'bayarMidtrans']
+)->name('transaksi.bayar');
         Route::get('/dashboard', [PelangganDashboard::class, 'index'])->name('dashboard');
 
         Route::resource('transaksi', PelangganTransaksi::class);
     });
+Route::post('/midtrans/callback', [MidtransCallbackController::class, 'handle']);
 
+Route::middleware('auth')->group(function () {
+    Route::get('/transaksi/{transaksi}/pay', [MidtransController::class, 'pay'])
+        ->name('midtrans.pay');
+});
 require __DIR__.'/auth.php';

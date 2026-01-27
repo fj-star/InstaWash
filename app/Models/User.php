@@ -22,6 +22,7 @@ class User extends Authenticatable
         'password',
         'role', // Tambahkan role karena digunakan untuk role-based access
         'no_hp',
+        'alamat',
     ];
 
     /**
@@ -79,4 +80,10 @@ class User extends Authenticatable
     {
         return $this->role === 'pelanggan';
     }
+
+
+public function transaksiPelanggan()
+{
+    return $this->hasMany(Transaksi::class, 'pelanggan_id');
+}
 }
