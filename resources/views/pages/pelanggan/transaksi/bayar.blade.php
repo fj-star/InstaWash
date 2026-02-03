@@ -32,6 +32,9 @@
 </script>
 
 <script>
+    document.getElementById('pay-button').addEventListener('click', function () {
+    this.disabled = true;
+});
 document.getElementById('pay-button').onclick = function () {
     snap.pay('{{ $snapToken }}', {
         onSuccess: function(result){
@@ -45,5 +48,23 @@ document.getElementById('pay-button').onclick = function () {
         }
     });
 };
+
+snap.pay('{{ $snapToken }}', {
+    onSuccess: function(result) {
+        /* Panggil swal atau langsung redirect */
+        alert("Pembayaran Berhasil!"); 
+        window.location.href = "{{ route('pelanggan.transaksi.index') }}";
+    },
+    onPending: function(result) {
+        alert("Menunggu pembayaran!");
+        window.location.href = "{{ route('pelanggan.transaksi.index') }}";
+    },
+    onError: function(result) {
+        alert("Pembayaran gagal!");
+    },
+    onClose: function() {
+        alert('Kamu menutup popup tanpa menyelesaikan pembayaran');
+    }
+});
 </script>
 @endsection

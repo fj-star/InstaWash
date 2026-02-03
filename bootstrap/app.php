@@ -16,6 +16,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'role'  => \App\Http\Middleware\RoleMiddleware::class,
             'guest' => RedirectIfAuthenticated::class,
         ]);
+        $middleware->validateCsrfTokens(except: [
+        '/midtrans/callback', // Izinkan Midtrans masuk tanpa token CSRF
+        
+    ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

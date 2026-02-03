@@ -36,6 +36,7 @@ class PelangganController extends Controller
             'email' => $request->email,
             'no_hp'    => $request->no_hp,
             'alamat'   => $request->alamat,
+            'ttl'   => $request->ttl,
             'password' => Hash::make('password123'), // default password
             'role' => 'pelanggan',
         ]);

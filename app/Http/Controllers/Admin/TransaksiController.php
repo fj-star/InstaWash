@@ -15,7 +15,8 @@ class TransaksiController extends Controller
 {
     public function index()
     {
-        $transaksis = Transaksi::with(['user','pelanggan','layanan','treatment'])
+        // Memastikan relasi user (pelanggan) terpanggil
+        $transaksis = Transaksi::with(['user', 'layanan', 'treatment'])
             ->latest()
             ->get();
 
@@ -25,7 +26,7 @@ class TransaksiController extends Controller
     public function create()
     {
         return view('pages.admin.transaksi.create', [
-            'pelanggans' => User::where('role','pelanggan')->get(),
+            'pelanggans' => User::where('role', 'pelanggan')->get(),
             'layanans'   => Layanan::all(),
             'treatments' => Treatment::all(),
         ]);
@@ -34,17 +35,18 @@ class TransaksiController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'pelanggan_id'      => 'required|exists:users,id',
+            'user_id'           => 'required|exists:users,id', // Konsisten pakai user_id
             'layanan_id'        => 'required|exists:layanans,id',
             'treatment_id'      => 'nullable|exists:treatments,id',
             'berat'             => 'required|numeric|min:0.1',
             'metode_pembayaran' => 'required|in:cash,midtrans',
         ]);
 
-        $data['user_id']        = auth()->id();
+        // Buat Order ID Unik untuk Midtrans
+        $data['order_id']       = 'INV-' . strtoupper(uniqid());
         $data['created_by']     = 'admin';
-        $data['status']         = 'pending';
-        $data['payment_status'] = 'pending';
+        $data['status']         = 'pending'; // Status Laundry
+        $data['payment_status'] = 'pending'; // Status Bayar
 
         $data['total_harga'] = $this->hitungTotalHarga(
             $data['layanan_id'],
@@ -52,41 +54,96 @@ class TransaksiController extends Controller
             $data['berat']
         );
 
-        $trx = null;
-
-        DB::transaction(function () use ($data, &$trx) {
+        $trx = DB::transaction(function () use ($data) {
             $trx = Transaksi::create($data);
 
             LogAktivitas::create([
                 'user_id' => auth()->id(),
                 'aksi'    => 'Tambah Transaksi',
-                'keterangan' => 'ID '.$trx->id
+                'keterangan' => 'ID Transaksi: '.$trx->id . ' ('.$data['order_id'].')'
             ]);
+
+            return $trx;
         });
 
-        // 🔥 KUNCI: kalau midtrans → langsung bayar
-        if ($trx->metode_pembayaran === 'midtrans') {
+        if ($request->metode_pembayaran === 'midtrans') {
             return redirect()
                 ->route('pelanggan.transaksi.bayar', $trx->id)
-                ->with('success','Silakan lakukan pembayaran QRIS');
+                ->with('success', 'Transaksi dibuat. Silakan scan QRIS untuk pelanggan.');
         }
 
         return redirect()->route('admin.transaksi.index')
-            ->with('success','Transaksi berhasil ditambahkan');
+            ->with('success', 'Transaksi Cash berhasil ditambahkan');
+    }
+
+    public function edit(Transaksi $transaksi)
+    {
+        return view('pages.admin.transaksi.edit', [
+            'transaksi'  => $transaksi,
+            'pelanggans' => User::where('role', 'pelanggan')->get(),
+            'layanans'   => Layanan::all(),
+            'treatments' => Treatment::all(),
+        ]);
+    }
+
+   public function update(Request $request, Transaksi $transaksi)
+{
+    // Validasi data yang boleh diedit
+    $rules = [
+        'status' => 'required|in:pending,proses,selesai',
+    ];
+
+    // Jika belum lunas, izinkan edit detail pesanan & harga
+    if ($transaksi->payment_status !== 'paid') {
+        $rules += [
+            'layanan_id'        => 'required|exists:layanans,id',
+            'treatment_id'      => 'nullable|exists:treatments,id',
+            'berat'             => 'required|numeric|min:0.1',
+            'metode_pembayaran' => 'required|in:cash,midtrans',
+        ];
+    }
+
+    $data = $request->validate($rules);
+
+    // Hitung ulang harga jika belum lunas
+    if ($transaksi->payment_status !== 'paid') {
+        $data['total_harga'] = $this->hitungTotalHarga(
+            $request->layanan_id,
+            $request->treatment_id,
+            $request->berat
+        );
+    }
+
+    // Eksekusi Update
+    $transaksi->update($data);
+
+    return redirect()->route('admin.transaksi.index')->with('success', 'Transaksi InstaWash berhasil diperbarui!');
+}
+
+    public function destroy(Transaksi $transaksi)
+    {
+        $transaksi->delete();
+        return back()->with('success', 'Transaksi berhasil dihapus');
     }
 
     private function hitungTotalHarga($layanan_id, $treatment_id, $berat)
     {
         $layanan = Layanan::findOrFail($layanan_id);
-        $treatment = $treatment_id ? Treatment::find($treatment_id) : null;
-
         $total = $layanan->harga * $berat;
 
-        if ($treatment) {
-            $total += $treatment->harga;
-            if ($treatment->diskon > 0) {
-                $total -= ($total * ($treatment->diskon / 100));
+        if ($treatment_id) {
+            $treatment = Treatment::find($treatment_id);
+            if ($treatment) {
+                $total += $treatment->harga;
+                if ($treatment->diskon > 0) {
+                    $total -= ($total * ($treatment->diskon / 100));
+                }
             }
+        }
+
+        // Tambahan Diskon 10% jika berat >= 10kg
+        if ($berat >= 10 && $total >= 100000) {
+            $total -= ($total * 0.1);
         }
 
         return round($total, 0);

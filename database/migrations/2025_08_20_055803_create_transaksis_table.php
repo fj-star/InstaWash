@@ -34,6 +34,7 @@ return new class extends Migration {
             $table->enum('payment_status', ['pending','paid','failed','expired'])
                 ->default('pending');
 
+                $table->string('snap_token')->nullable();
             $table->enum('metode_pembayaran', ['cash','midtrans'])
                 ->default('cash');
 

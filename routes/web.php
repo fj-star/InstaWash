@@ -1,9 +1,10 @@
 <?php
-
+use App\Http\Controllers\Admin\AbsensiController as AdminAbsensi;
+use App\Http\Controllers\AbsensiController as KaryawanAbsensi;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\MidtransCallbackController;
-use App\Http\Controllers\MidtransController;
+
 /*
 |--------------------------------------------------------------------------
 | ADMIN
@@ -52,6 +53,8 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::post('/midtrans/callback', [MidtransCallbackController::class, 'handle']);
+
 
 /*
 |--------------------------------------------------------------------------
@@ -75,7 +78,10 @@ Route::prefix('admin')
     ->group(function () {
 
         Route::get('/dashboard', [AdminDashboard::class, 'index'])->name('dashboard');
-
+        Route::get('/absensi', [AdminAbsensi::class, 'index'])->name('absensi.index');
+        Route::resource('absensi', AdminAbsensi::class)->except(['create', 'store']);
+        Route::post('/admin/absensi/manual', [AdminAbsensi::class, 'storeManual'])->name('absensi.store_manual');
+Route::post('/absensi', [AdminAbsensi::class, 'store'])->name('absensi.store');
         Route::resource('pelanggans', AdminPelanggan::class);
         Route::resource('layanans', LayananController::class);
         Route::resource('treatments', TreatmentController::class);
@@ -118,8 +124,10 @@ Route::prefix('karyawan')
     ->middleware(['auth','role:karyawan'])
     ->group(function () {
 
+        Route::get('/absensi', [KaryawanAbsensi::class, 'index'])->name('absensi.index');
+Route::post('/absensi', [KaryawanAbsensi::class, 'store'])->name('absensi.store');
         Route::get('/dashboard', [KaryawanDashboard::class, 'index'])->name('dashboard');
-
+        Route::put('/transaksi/{transaksi}/konfirmasi-bayar', [KaryawanTransaksi::class, 'konfirmasiBayar'])->name('transaksi.konfirmasi-bayar');
         Route::resource('transaksi', KaryawanTransaksi::class);
         Route::resource('pelanggan', KaryawanPelanggan::class);
     });
@@ -141,10 +149,10 @@ Route::prefix('pelanggan')
 
         Route::resource('transaksi', PelangganTransaksi::class);
     });
-Route::post('/midtrans/callback', [MidtransCallbackController::class, 'handle']);
 
-Route::middleware('auth')->group(function () {
-    Route::get('/transaksi/{transaksi}/pay', [MidtransController::class, 'pay'])
-        ->name('midtrans.pay');
-});
+
+// Route::middleware('auth')->group(function () {
+//     Route::get('/transaksi/{transaksi}/pay', [MidtransController::class, 'pay'])
+//         ->name('midtrans.pay');
+// });
 require __DIR__.'/auth.php';

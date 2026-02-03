@@ -3,38 +3,14 @@
 namespace App\Services;
 
 use Midtrans\Config;
-use Midtrans\Snap;
-use App\Models\Transaksi;
 
 class MidtransService
 {
-    public function __construct()
+    public static function init()
     {
-        Config::$serverKey = config('services.midtrans.server_key');
-        Config::$isProduction = config('services.midtrans.is_production');
-        Config::$isSanitized = true;
-        Config::$is3ds = true;
-    }
-
-    public function getSnapToken(Transaksi $transaksi)
-    {
-        if (!$transaksi->order_id) {
-            $transaksi->update([
-                'order_id' => 'TRX-' . $transaksi->id . '-' . time()
-            ]);
-        }
-
-        $params = [
-            'transaction_details' => [
-                'order_id' => $transaksi->order_id,
-                'gross_amount' => (int) $transaksi->total_harga,
-            ],
-            'customer_details' => [
-                'first_name' => $transaksi->user->name ?? 'Customer',
-                'email' => $transaksi->user->email ?? 'customer@mail.com',
-            ],
-        ];
-
-        return Snap::getSnapToken($params);
+        Config::$serverKey     = config('midtrans.server_key');
+        Config::$isProduction = config('midtrans.is_production');
+        Config::$isSanitized  = config('midtrans.is_sanitized');
+        Config::$is3ds        = config('midtrans.is_3ds');
     }
 }

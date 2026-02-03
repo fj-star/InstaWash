@@ -39,6 +39,13 @@
             </a>
         </li>
 
+        <li class="nav-item {{ Request::is('admin/absensi*') ? 'active' : '' }}">
+        <a class="nav-link" href="{{ route('admin.absensi.index') }}">
+            <i class="fas fa-fw fa-calendar-check"></i>
+            <span>Monitoring Absensi</span>
+        </a>
+    </li>
+
         <li class="nav-item">
             <a class="nav-link" href="{{ route('admin.laporan.index') }}">
                 <i class="fas fa-fw fa-file-alt"></i>
@@ -82,6 +89,13 @@
                 <span>Dashboard</span>
             </a>
         </li>
+
+        <li class="nav-item {{ Request::is('karyawan/absensi*') ? 'active' : '' }}">
+        <a class="nav-link" href="{{ route('karyawan.absensi.index') }}">
+            <i class="fas fa-fw fa-user-clock"></i>
+            <span>Presensi Kerja</span>
+        </a>
+    </li>
 
         <li class="nav-item">
             <a class="nav-link" href="{{ route('karyawan.transaksi.index') }}">

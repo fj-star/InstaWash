@@ -17,6 +17,7 @@ class Transaksi extends Model
         'berat',
         'total_harga',
         'order_id',
+        'snap_token',
         'midtrans_transaction_id',
         'payment_type',
         'payment_status',
@@ -53,6 +54,6 @@ class Transaksi extends Model
 
     public function isPaid()
     {
-        return $this->payment_status === 'settlement';
+        return $this->payment_status === 'paid';
     }
 }

@@ -1,299 +1,144 @@
 @extends('layouts.main')
+
 @section('content')
 <div class="container-fluid px-4">
-    <!-- Page Heading -->
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Edit Transaksi</h1>
-        <a href="{{ route('admin.transaksi.index') }}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
-            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Kembali
+        <h1 class="h3 mb-0 text-gray-800">Edit Transaksi #INV{{ $transaksi->id }}</h1>
+        <a href="{{ route('admin.transaksi.index') }}" class="btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm"></i> Kembali
         </a>
     </div>
 
-    <div class="row">
-        <div class="col-lg-8">
-            <!-- Basic Card Example -->
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Form Edit Transaksi</h6>
-                </div>
-                <div class="card-body">
-                    <form action="{{ route('admin.transaksi.update', $transaksi->id) }}" method="POST" id="editTransaksiForm">
-                        @csrf
-                        @method('PUT')
-                        
+    <form action="{{ route('admin.transaksi.update', $transaksi->id) }}" method="POST">
+        @csrf 
+        @method('PUT')
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card shadow mb-4 border-left-warning">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Detail Pesanan InstaWash</h6>
+                    </div>
+                    <div class="card-body">
+                        @if($transaksi->payment_status == 'paid')
+                            <div class="alert alert-success">
+                                <i class="fas fa-check-circle"></i> Transaksi ini sudah <b>LUNAS</b>. Anda hanya dapat mengubah <b>Status Pengerjaan</b>.
+                            </div>
+                        @endif
+
                         <div class="row">
                             <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="user_id">Pelanggan <span class="text-danger">*</span></label>
-                                    <select name="user_id" id="user_id" class="form-control @error('user_id') is-invalid @enderror" required>
-                                        <option value="">-- Pilih Pelanggan --</option>
-                                        @foreach($pelanggans as $p)
-                                            <option value="{{ $p->id }}" {{ $p->id == old('user_id', $transaksi->user_id) ? 'selected' : '' }}>
-                                                {{ $p->name }} ({{ $p->email }})
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    @error('user_id')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                                <div class="form-group mb-3">
+                                    <label class="font-weight-bold">Pelanggan</label>
+                                    <input type="text" class="form-control bg-light" value="{{ $transaksi->user?->name }}" readonly>
+                                    <small class="text-muted">*Nama pelanggan tidak dapat diubah</small>
                                 </div>
-                                
-                                <div class="form-group">
-                                    <label for="layanan_id">Layanan <span class="text-danger">*</span></label>
-                                    <select name="layanan_id" id="layanan_id" class="form-control @error('layanan_id') is-invalid @enderror" required>
-                                        <option value="">-- Pilih Layanan --</option>
+
+                                <div class="form-group mb-3">
+                                    <label for="layanan_id">Layanan</label>
+                                    <select name="layanan_id" id="layanan_id" class="form-control" {{ $transaksi->payment_status == 'paid' ? 'disabled' : 'required' }}>
                                         @foreach($layanans as $l)
-                                            <option value="{{ $l->id }}" data-harga="{{ $l->harga }}" {{ $l->id == old('layanan_id', $transaksi->layanan_id) ? 'selected' : '' }}>
-                                                {{ $l->nama_layanan }} - Rp {{ number_format($l->harga, 0, ',', '.') }}/kg
+                                            <option value="{{ $l->id }}" data-harga="{{ $l->harga }}" {{ $transaksi->layanan_id == $l->id ? 'selected' : '' }}>
+                                                {{ $l->nama_layanan }}
                                             </option>
                                         @endforeach
                                     </select>
-                                    @error('layanan_id')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
                                 </div>
-                                
-                                <div class="form-group">
-                                    <label for="treatment_id">Treatment (Opsional)</label>
-                                    <select name="treatment_id" id="treatment_id" class="form-control @error('treatment_id') is-invalid @enderror">
+
+                                <div class="form-group mb-3">
+                                    <label for="treatment_id">Treatment</label>
+                                    <select name="treatment_id" id="treatment_id" class="form-control" {{ $transaksi->payment_status == 'paid' ? 'disabled' : '' }}>
                                         <option value="">-- Tanpa Treatment --</option>
                                         @foreach($treatments as $t)
-                                            <option value="{{ $t->id }}" data-harga="{{ $t->harga }}" data-diskon="{{ $t->diskon }}" {{ $t->id == old('treatment_id', $transaksi->treatment_id) ? 'selected' : '' }}>
-                                                {{ $t->nama_treatment }} - Rp {{ number_format($t->harga, 0, ',', '.') }} (Diskon: {{ $t->diskon }}%)
+                                            <option value="{{ $t->id }}" data-harga="{{ $t->harga }}" data-diskon="{{ $t->diskon }}" {{ $transaksi->treatment_id == $t->id ? 'selected' : '' }}>
+                                                {{ $t->nama_treatment }}
                                             </option>
                                         @endforeach
                                     </select>
-                                    @error('treatment_id')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
                                 </div>
                             </div>
-                            
+
                             <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="berat">Berat (kg) <span class="text-danger">*</span></label>
-                                    <div class="input-group">
-                                        <input type="number" name="berat" id="berat" class="form-control @error('berat') is-invalid @enderror" 
-                                               value="{{ old('berat', $transaksi->berat) }}" step="0.1" min="0.1" required>
-                                        <div class="input-group-append">
-                                            <span class="input-group-text">kg</span>
-                                        </div>
-                                    </div>
-                                    @error('berat')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                                <div class="form-group mb-3">
+                                    <label for="berat">Berat (kg)</label>
+                                    <input type="number" name="berat" id="berat" class="form-control" value="{{ $transaksi->berat }}" step="0.1" {{ $transaksi->payment_status == 'paid' ? 'readonly' : 'required' }}>
                                 </div>
-                                
-                                <div class="form-group">
-                                    <label for="metode_pembayaran">Metode Pembayaran <span class="text-danger">*</span></label>
-                                    <select name="metode_pembayaran" id="metode_pembayaran" class="form-control @error('metode_pembayaran') is-invalid @enderror" required>
-                                        <option value="">-- Pilih Metode --</option>
-                                        @foreach(['cash' => 'Cash', 'transfer' => 'Transfer', 'ewallet' => 'E-Wallet'] as $value => $label)
-                                            <option value="{{ $value }}" {{ $value == old('metode_pembayaran', $transaksi->metode_pembayaran) ? 'selected' : '' }}>
-                                                {{ $label }}
-                                            </option>
-                                        @endforeach
+
+                                <div class="form-group mb-3">
+                                    <label for="metode_pembayaran">Metode Pembayaran</label>
+                                    <select name="metode_pembayaran" class="form-control" {{ $transaksi->payment_status == 'paid' ? 'disabled' : 'required' }}>
+                                        <option value="cash" {{ $transaksi->metode_pembayaran == 'cash' ? 'selected' : '' }}>Cash</option>
+                                        <option value="midtrans" {{ $transaksi->metode_pembayaran == 'midtrans' ? 'selected' : '' }}>Midtrans</option>
                                     </select>
-                                    @error('metode_pembayaran')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
                                 </div>
-                                
-                                <div class="form-group">
-                                    <label for="status">Status <span class="text-danger">*</span></label>
-                                    <select name="status" id="status" class="form-control @error('status') is-invalid @enderror" required>
-                                        <option value="">-- Pilih Status --</option>
-                                        @foreach(['pending' => 'Pending', 'proses' => 'Proses', 'selesai' => 'Selesai'] as $value => $label)
-                                            <option value="{{ $value }}" {{ $value == old('status', $transaksi->status) ? 'selected' : '' }}>
-                                                {{ $label }}
-                                            </option>
-                                        @endforeach>
+
+                                <div class="form-group mb-3">
+                                    <label for="status" class="text-primary font-weight-bold">Status Pengerjaan Laundry</label>
+                                    <select name="status" id="status" class="form-control border-primary" required>
+                                        <option value="pending" {{ $transaksi->status == 'pending' ? 'selected' : '' }}>Pending (Antrean)</option>
+                                        <option value="proses" {{ $transaksi->status == 'proses' ? 'selected' : '' }}>Proses (Sedang Dicuci)</option>
+                                        <option value="selesai" {{ $transaksi->status == 'selesai' ? 'selected' : '' }}>Selesai (Siap Ambil)</option>
                                     </select>
-                                    @error('status')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
                                 </div>
                             </div>
                         </div>
-                        
-                        <div class="form-group mt-4">
-                            <button type="submit" class="btn btn-success">
-                                <i class="fas fa-save"></i> Update Transaksi
-                            </button>
-                            <a href="{{ route('admin.transaksi.index') }}" class="btn btn-secondary">
-                                <i class="fas fa-times"></i> Batal
-                            </a>
+                    </div>
+                    <div class="card-footer text-right">
+                        <button type="submit" class="btn btn-warning text-dark font-weight-bold shadow-sm">
+                            <i class="fas fa-save"></i> Simpan Perubahan
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 bg-light">
+                        <h6 class="m-0 font-weight-bold text-primary">Info Pembayaran</h6>
+                    </div>
+                    <div class="card-body">
+                        <p>Status Bayar: 
+                            <span class="badge {{ $transaksi->payment_status == 'paid' ? 'bg-success' : 'bg-danger' }}">
+                                {{ strtoupper($transaksi->payment_status) }}
+                            </span>
+                        </p>
+                        <hr>
+                        <div class="d-flex justify-content-between h5">
+                            <span>Total Harga:</span>
+                            <span class="text-success font-weight-bold">Rp <span id="total-harga">{{ number_format($transaksi->total_harga, 0, ',', '.') }}</span></span>
                         </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-lg-4">
-            <!-- Card untuk menampilkan perhitungan harga -->
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Perhitungan Harga</h6>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered">
-                            <tr>
-                                <td>Harga Layanan/kg</td>
-                                <td class="text-right">Rp <span id="harga-layanan">0</span></td>
-                            </tr>
-                            <tr>
-                                <td>Berat</td>
-                                <td class="text-right"><span id="berat-display">0</span> kg</td>
-                            </tr>
-                            <tr>
-                                <td>Subtotal Layanan</td>
-                                <td class="text-right">Rp <span id="subtotal-layanan">0</span></td>
-                            </tr>
-                            <tr>
-                                <td>Harga Treatment</td>
-                                <td class="text-right">Rp <span id="harga-treatment">0</span></td>
-                            </tr>
-                            <tr>
-                                <td>Diskon Treatment</td>
-                                <td class="text-right">- <span id="diskon-treatment">0</span>%</td>
-                            </tr>
-                            <tr>
-                                <td>Diskon Tambahan (≥10kg & ≥Rp100.000)</td>
-                                <td class="text-right">- <span id="diskon-tambahan">0</span>%</td>
-                            </tr>
-                            <tr class="font-weight-bold">
-                                <td>Total Harga</td>
-                                <td class="text-right">Rp <span id="total-harga">0</span></td>
-                            </tr>
-                        </table>
-                    </div>
-                    
-                    <input type="hidden" name="total_harga" id="total_harga_input" value="{{ old('total_harga', $transaksi->total_harga) }}">
-                    
-                    <div class="alert alert-info mt-3">
-                        <i class="fas fa-info-circle"></i> Total harga akan dihitung otomatis berdasarkan layanan, treatment, dan berat yang dipilih.
                     </div>
                 </div>
             </div>
-            
-            <!-- Card Informasi Transaksi -->
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Informasi Transaksi</h6>
-                </div>
-                <div class="card-body">
-                    <p><strong>ID Transaksi:</strong> INV{{ str_pad($transaksi->id, 4, '0', STR_PAD_LEFT) }}</p>
-                    <p><strong>Tanggal Dibuat:</strong> {{ $transaksi->created_at->format('d M Y H:i') }}</p>
-                    <p><strong>Dibuat oleh:</strong> {{ ucfirst($transaksi->created_by) }}</p>
-                    <p><strong>Status Saat Ini:</strong> 
-                        <span class="badge badge-{{ $transaksi->status == 'pending' ? 'warning' : ($transaksi->status == 'proses' ? 'info' : 'success') }}">
-                            {{ ucfirst($transaksi->status) }}
-                        </span>
-                    </p>
-                </div>
-            </div>
         </div>
-    </div>
+    </form>
 </div>
 @endsection
 
 @section('scripts')
 <script>
     $(document).ready(function() {
-        // Fungsi untuk menghitung total harga
-        function hitungTotalHarga() {
-            var layananId = $('#layanan_id').val();
-            var treatmentId = $('#treatment_id').val();
-            var berat = parseFloat($('#berat').val()) || 0;
-            
-            var hargaLayanan = 0;
-            var hargaTreatment = 0;
-            var diskonTreatment = 0;
-            var diskonTambahan = 0;
-            
-            // Ambil harga layanan
-            if (layananId) {
-                hargaLayanan = parseFloat($('#layanan_id option:selected').data('harga')) || 0;
-            }
-            
-            // Ambil harga dan diskon treatment
-            if (treatmentId) {
-                hargaTreatment = parseFloat($('#treatment_id option:selected').data('harga')) || 0;
-                diskonTreatment = parseFloat($('#treatment_id option:selected').data('diskon')) || 0;
-            }
-            
-            // Hitung subtotal layanan
-            var subtotalLayanan = hargaLayanan * berat;
-            
-            // Hitung total sebelum diskon
-            var totalSebelumDiskon = subtotalLayanan + hargaTreatment;
-            
-            // Hitung diskon treatment
-            var nilaiDiskonTreatment = 0;
+        function hitungTotal() {
+            let berat = parseFloat($('#berat').val()) || 0;
+            let hargaLayanan = parseFloat($('#layanan_id option:selected').data('harga')) || 0;
+            let hargaTreatment = parseFloat($('#treatment_id option:selected').data('harga')) || 0;
+            let diskonTreatment = parseFloat($('#treatment_id option:selected').data('diskon')) || 0;
+
+            let subtotalLayanan = hargaLayanan * berat;
+            let total = subtotalLayanan + hargaTreatment;
+
             if (diskonTreatment > 0) {
-                nilaiDiskonTreatment = totalSebelumDiskon * (diskonTreatment / 100);
+                total -= (total * (diskonTreatment / 100));
             }
-            
-            // Hitung total setelah diskon treatment
-            var totalSetelahDiskonTreatment = totalSebelumDiskon - nilaiDiskonTreatment;
-            
-            // Hitung diskon tambahan (10% jika berat >= 10kg dan total >= 100000)
-            if (berat >= 10 && totalSetelahDiskonTreatment >= 100000) {
-                diskonTambahan = 10;
+
+            // Diskon 10% jika berat >= 10kg
+            if (berat >= 10 && total >= 100000) {
+                total -= (total * 0.1);
             }
-            
-            var nilaiDiskonTambahan = totalSetelahDiskonTreatment * (diskonTambahan / 100);
-            
-            // Hitung total akhir
-            var totalAkhir = totalSetelahDiskonTreatment - nilaiDiskonTambahan;
-            
-            // Update tampilan
-            $('#harga-layanan').text(number_format(hargaLayanan, 0, ',', '.'));
-            $('#berat-display').text(berat);
-            $('#subtotal-layanan').text(number_format(subtotalLayanan, 0, ',', '.'));
-            $('#harga-treatment').text(number_format(hargaTreatment, 0, ',', '.'));
-            $('#diskon-treatment').text(diskonTreatment);
-            $('#diskon-tambahan').text(diskonTambahan);
-            $('#total-harga').text(number_format(totalAkhir, 0, ',', '.'));
-            
-            // Update input hidden
-            $('#total_harga_input').val(totalAkhir);
+
+            $('#total-harga').text(Math.round(total).toLocaleString('id-ID'));
         }
-        
-        // Fungsi format number
-        function number_format(number, decimals, dec_point, thousands_sep) {
-            number = (number + '').replace(/[^0-9+\-Ee.]/g, '');
-            var n = !isFinite(+number) ? 0 : +number,
-                prec = !isFinite(+decimals) ? 0 : Math.abs(decimals),
-                sep = (typeof thousands_sep === 'undefined') ? ',' : thousands_sep,
-                dec = (typeof dec_point === 'undefined') ? '.' : dec_point,
-                s = '',
-                toFixedFix = function (n, prec) {
-                    var k = Math.pow(10, prec);
-                    return '' + Math.round(n * k) / k;
-                };
-            s = (prec ? toFixedFix(n, prec) : '' + Math.round(n)).split('.');
-            if (thousands_sep) {
-                var re = /(-?\d+)(\d{3})/;
-                while (re.test(s[0])) {
-                    s[0] = s[0].replace(re, '$1' + thousands_sep + '$2');
-                }
-            }
-            if ((s[1] || '').length < prec) {
-                s[1] = s[1] || '';
-                s[1] += new Array(prec - s[1].length + 1).join('0');
-            }
-            return s.join(dec);
-        }
-        
-        // Event listener untuk perubahan input
-        $('#layanan_id, #treatment_id, #berat').on('change', function() {
-            hitungTotalHarga();
-        });
-        
-        // Hitung total harga saat halaman dimuat
-        hitungTotalHarga();
+
+        $('#layanan_id, #treatment_id, #berat').on('change keyup', hitungTotal);
     });
 </script>
 @endsection

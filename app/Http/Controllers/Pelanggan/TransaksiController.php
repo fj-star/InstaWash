@@ -6,23 +6,19 @@ use App\Http\Controllers\Controller;
 use App\Models\Transaksi;
 use App\Models\Layanan;
 use App\Models\Treatment;
+use App\Services\MidtransService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Midtrans\Snap;
-use Midtrans\Config;
 
 class TransaksiController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        $query = Transaksi::with(['layanan', 'treatment'])
-            ->where('user_id', auth()->id());
-
-        if ($request->status) {
-            $query->where('status', $request->status);
-        }
-
-        $transaksis = $query->latest()->paginate(10);
+        $transaksis = Transaksi::with(['layanan','treatment'])
+            ->where('user_id', auth()->id())
+            ->latest()
+            ->get();
 
         return view('pages.pelanggan.transaksi.index', compact('transaksis'));
     }
@@ -38,16 +34,17 @@ class TransaksiController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'layanan_id' => 'required|exists:layanans,id',
-            'treatment_id' => 'nullable|exists:treatments,id',
+            'layanan_id' => 'required',
+            'treatment_id' => 'nullable',
             'berat' => 'required|numeric|min:0.1',
             'metode_pembayaran' => 'required|in:cash,midtrans',
         ]);
 
         DB::transaction(function () use ($data) {
+
             $total = $this->hitungTotalHarga(
                 $data['layanan_id'],
-                $data['treatment_id'] ?? null,
+                $data['treatment_id'],
                 $data['berat']
             );
 
@@ -58,56 +55,86 @@ class TransaksiController extends Controller
                 'treatment_id' => $data['treatment_id'],
                 'berat' => $data['berat'],
                 'total_harga' => $total,
-                'status' => 'pending',
-                'payment_status' => 'pending',
                 'metode_pembayaran' => $data['metode_pembayaran'],
+                'payment_status' => 'pending',
+                'status' => 'pending',
                 'created_by' => 'pelanggan',
             ]);
         });
 
         return redirect()->route('pelanggan.transaksi.index')
-            ->with('success', 'Transaksi berhasil dibuat');
+            ->with('success','Transaksi berhasil dibuat');
+    }
+
+    /* ================= MIDTRANS ================= */
+
+    public function bayarMidtrans(Transaksi $transaksi)
+    {
+    abort_if($transaksi->user_id !== auth()->id(), 403);
+
+    // kalau sudah lunas, jangan bisa bayar lagi
+    if ($transaksi->payment_status === 'paid') {
+        return redirect()
+            ->route('pelanggan.transaksi.index')
+            ->with('success', 'Transaksi sudah lunas');
+    }
+
+    // INIT MIDTRANS
+    \App\Services\MidtransService::init();
+
+    /**
+     * ORDER ID
+     * cuma dibuat SEKALI
+     */
+    if (!$transaksi->order_id) {
+        $transaksi->update([
+            'order_id' => 'TRX-' . $transaksi->id
+        ]);
     }
 
     /**
-     * ===============================
-     * MIDTRANS BAYAR
-     * ===============================
+     * SNAP TOKEN
+     * cuma dibuat SEKALI
      */
-    public function bayarMidtrans(Transaksi $transaksi)
-    {
-        abort_if($transaksi->user_id !== auth()->id(), 403);
-
-        if ($transaksi->payment_status === 'paid') {
-            return back()->with('error', 'Transaksi sudah dibayar');
-        }
-
-        Config::$serverKey = config('services.midtrans.server_key');
-        Config::$isProduction = config('services.midtrans.is_production');
-        Config::$isSanitized = true;
-        Config::$is3ds = true;
-
-        if (!$transaksi->order_id) {
-            $transaksi->update([
-                'order_id' => 'TRX-' . $transaksi->id . '-' . time(),
-            ]);
-        }
-
-        $params = [
+    if (!$transaksi->snap_token) {
+        $snapToken = \Midtrans\Snap::getSnapToken([
             'transaction_details' => [
-                'order_id' => $transaksi->order_id,
+                'order_id'     => $transaksi->order_id,
                 'gross_amount' => (int) $transaksi->total_harga,
             ],
             'customer_details' => [
                 'first_name' => auth()->user()->name,
-                'email' => auth()->user()->email,
-                'phone' => auth()->user()->no_hp,
+                'email'      => auth()->user()->email,
             ],
-        ];
+        ]);
 
-        $snapToken = Snap::getSnapToken($params);
+        $transaksi->update([
+            'snap_token' => $snapToken
+        ]);
+    }
 
-        return view('pages.pelanggan.transaksi.bayar', compact('snapToken', 'transaksi'));
+    return view('pages.pelanggan.transaksi.bayar', [
+        'transaksi' => $transaksi,
+        'snapToken' => $transaksi->snap_token
+    ]);
+}
+
+    /* ================= HELPER ================= */
+
+    private function hitungTotalHarga($layanan_id, $treatment_id, $berat)
+    {
+        $layanan = Layanan::findOrFail($layanan_id);
+        $total = $layanan->harga * $berat;
+
+        if ($treatment_id) {
+            $treatment = Treatment::findOrFail($treatment_id);
+            $total += $treatment->harga;
+            if ($treatment->diskon > 0) {
+                $total -= $total * ($treatment->diskon / 100);
+            }
+        }
+
+        return round($total);
     }
 
     public function show($id)
@@ -115,24 +142,7 @@ class TransaksiController extends Controller
     // Ambil data transaksi berdasarkan ID
     $transaksi = Transaksi::findOrFail($id);
 
-    // Kembalikan ke view detail
+    // Kirim data ke view detail
     return view('pages.pelanggan.transaksi.show', compact('transaksi'));
 }
-
-    private function hitungTotalHarga($layanan_id, $treatment_id, $berat)
-    {
-        $layanan = Layanan::findOrFail($layanan_id);
-        $treatment = $treatment_id ? Treatment::findOrFail($treatment_id) : null;
-
-        $total = $layanan->harga * $berat;
-
-        if ($treatment) {
-            $total += $treatment->harga;
-            if ($treatment->diskon > 0) {
-                $total -= ($total * ($treatment->diskon / 100));
-            }
-        }
-
-        return round($total, 0);
-    }
 }

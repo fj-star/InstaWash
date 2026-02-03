@@ -1,124 +1,56 @@
 @extends('layouts.main')
-
 @section('content')
-<div class="row justify-content-center">
-    <div class="col-md-8">
 
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Edit Transaksi</h5>
-            </div>
 
-            <div class="card-body">
-                <form action="{{ route('karyawan.transaksi.update', $transaksi->id) }}" method="POST">
-                    @csrf
-                    @method('PUT')
+@if ($errors->any())
+    <div class="alert alert-danger">
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
 
-                    {{-- Pelanggan --}}
-                    <div class="mb-3">
-                        <label class="form-label">Pelanggan</label>
-                        <select name="user_id" class="form-control" required>
-                            <option value="">-- Pilih Pelanggan --</option>
-                            @foreach($pelanggans as $p)
-                                <option value="{{ $p->id }}"
-                                    {{ old('user_id', $transaksi->user_id) == $p->id ? 'selected' : '' }}>
-                                    {{ $p->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('user_id')
-                            <small class="text-danger">{{ $message }}</small>
-                        @enderror
-                    </div>
-
-                    {{-- Layanan --}}
-                    <div class="mb-3">
-                        <label class="form-label">Layanan</label>
-                        <select name="layanan_id" class="form-control" required>
-                            <option value="">-- Pilih Layanan --</option>
+<div class="card shadow border-left-warning">
+    <div class="card-header"><h5>Edit Transaksi #{{ $transaksi->order_id }}</h5></div>
+    <div class="card-body">
+        <form action="{{ route('karyawan.transaksi.update', $transaksi->id) }}" method="POST">
+            @csrf @method('PUT')
+            <div class="row">
+                <div class="col-md-6">
+                    <label class="fw-bold">Nama Pelanggan</label>
+                    <p class="form-control bg-light">{{ $transaksi->user->name ?? 'Pelanggan' }}</p>
+                    
+                    <label>Status Laundry</label>
+                    <select name="status" id="status" class="form-control border-primary" required>
+                        <option value="pending" {{ $transaksi->status == 'pending' ? 'selected' : '' }}>Pending</option>
+                        <option value="proses" {{ $transaksi->status == 'proses' ? 'selected' : '' }}>Proses</option>
+                        <option value="selesai" {{ $transaksi->status == 'selesai' ? 'selected' : '' }}>Selesai</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    @if($transaksi->payment_status !== 'paid')
+                        <label>Layanan</label>
+                        <select name="layanan_id" class="form-control mb-2">
                             @foreach($layanans as $l)
-                                <option value="{{ $l->id }}"
-                                    {{ old('layanan_id', $transaksi->layanan_id) == $l->id ? 'selected' : '' }}>
-                                    {{ $l->nama_layanan }}
-                                </option>
+                                <option value="{{ $l->id }}" {{ $transaksi->layanan_id == $l->id ? 'selected' : '' }}>{{ $l->nama_layanan }}</option>
                             @endforeach
                         </select>
-                        @error('layanan_id')
-                            <small class="text-danger">{{ $message }}</small>
-                        @enderror
-                    </div>
-
-                    {{-- Treatment --}}
-                    <div class="mb-3">
-                        <label class="form-label">
-                            Treatment <small class="text-muted">(Opsional)</small>
-                        </label>
-                        <select name="treatment_id" class="form-control">
-                            <option value="">-- Tanpa Treatment --</option>
-                            @foreach($treatments as $t)
-                                <option value="{{ $t->id }}"
-                                    {{ old('treatment_id', $transaksi->treatment_id) == $t->id ? 'selected' : '' }}>
-                                    {{ $t->nama_treatment }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('treatment_id')
-                            <small class="text-danger">{{ $message }}</small>
-                        @enderror
-                    </div>
-
-                    {{-- Berat --}}
-                    <div class="mb-3">
-                        <label class="form-label">Berat (Kg)</label>
-                        <input type="number"
-                               step="0.1"
-                               min="0.1"
-                               name="berat"
-                               class="form-control"
-                               value="{{ old('berat', $transaksi->berat) }}"
-                               required>
-                        @error('berat')
-                            <small class="text-danger">{{ $message }}</small>
-                        @enderror
-                    </div>
-
-                    {{-- Status --}}
-                    <div class="mb-3">
-                        <label class="form-label">Status Transaksi</label>
-                        <select name="status" class="form-control" required>
-                            <option value="pending"
-                                {{ old('status', $transaksi->status) == 'pending' ? 'selected' : '' }}>
-                                Pending
-                            </option>
-                            <option value="proses"
-                                {{ old('status', $transaksi->status) == 'proses' ? 'selected' : '' }}>
-                                Proses
-                            </option>
-                            <option value="selesai"
-                                {{ old('status', $transaksi->status) == 'selesai' ? 'selected' : '' }}>
-                                Selesai
-                            </option>
-                        </select>
-                        @error('status')
-                            <small class="text-danger">{{ $message }}</small>
-                        @enderror
-                    </div>
-
-                    {{-- Button --}}
-                    <div class="d-flex justify-content-end gap-2">
-                        <a href="{{ route('karyawan.transaksi.index') }}"
-                           class="btn btn-secondary">
-                            Kembali
-                        </a>
-                        <button type="submit" class="btn btn-primary">
-                            Update Transaksi
-                        </button>
-                    </div>
-
-                </form>
+                        <label>Berat (Kg)</label>
+                        <input type="number" name="berat" step="0.1" class="form-control mb-2" value="{{ $transaksi->berat }}">
+                        
+                        
+                        <input type="hidden" name="metode_pembayaran" value="{{ $transaksi->metode_pembayaran }}">
+                    @else
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle"></i> Transaksi Lunas. Detail pesanan (Layanan/Berat) dikunci untuk keamanan data.
+                        </div>
+                    @endif
+                </div>
             </div>
-        </div>
-
+            <button type="submit" class="btn btn-warning w-100 mt-3 font-weight-bold shadow-sm">Simpan Perubahan</button>
+        </form>
     </div>
 </div>
 @endsection

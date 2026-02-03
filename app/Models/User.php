@@ -23,6 +23,7 @@ class User extends Authenticatable
         'role', // Tambahkan role karena digunakan untuk role-based access
         'no_hp',
         'alamat',
+        'ttl',
     ];
 
     /**
