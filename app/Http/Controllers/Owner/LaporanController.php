@@ -6,22 +6,26 @@ use App\Http\Controllers\Controller;
 use App\Models\Transaksi;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 
 class LaporanController extends Controller
 {
-    /**
-     * TAMPIL HALAMAN LAPORAN OWNER
-     */
     public function index(Request $request)
     {
-        $query = Transaksi::with(['user', 'layanan'])
-            ->where('status', 'selesai');
+        // Default tanggal: Awal bulan ini sampai hari ini
+        $from = $request->get('from', Carbon::now()->startOfMonth()->toDateString());
+        $to   = $request->get('to', Carbon::now()->toDateString());
 
-        // filter tanggal
-        if ($request->filled('from') && $request->filled('to')) {
+        // Eager Loading 'pelanggan' dan 'user' agar nama tidak hilang
+        $query = Transaksi::with(['pelanggan', 'user', 'layanan']);
+
+        // Filter: Hanya transaksi yang sudah bayar (Paid) agar sama dengan Dashboard
+        $query->where('payment_status', 'paid');
+
+        if ($from && $to) {
             $query->whereBetween('created_at', [
-                $request->from . ' 00:00:00',
-                $request->to   . ' 23:59:59',
+                $from . ' 00:00:00',
+                $to   . ' 23:59:59',
             ]);
         }
 
@@ -30,24 +34,20 @@ class LaporanController extends Controller
         return view('pages.owner.laporan', [
             'transaksis' => $transaksis,
             'total'      => $transaksis->sum('total_harga'),
-            'from'       => $request->from,
-            'to'         => $request->to,
+            'from'       => $from,
+            'to'         => $to,
         ]);
     }
 
-    /**
-     * EXPORT PDF LAPORAN OWNER
-     */
     public function pdf(Request $request)
     {
-        $query = Transaksi::with(['user', 'layanan'])
-            ->where('status', 'selesai');
+        $from = $request->get('from');
+        $to   = $request->get('to');
 
-        if ($request->filled('from') && $request->filled('to')) {
-            $query->whereBetween('created_at', [
-                $request->from . ' 00:00:00',
-                $request->to   . ' 23:59:59',
-            ]);
+        $query = Transaksi::with(['pelanggan', 'user', 'layanan'])->where('payment_status', 'paid');
+
+        if ($from && $to) {
+            $query->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59']);
         }
 
         $transaksis = $query->get();
@@ -55,10 +55,10 @@ class LaporanController extends Controller
         $pdf = Pdf::loadView('pages.owner.pdf', [
             'transaksis' => $transaksis,
             'total'      => $transaksis->sum('total_harga'),
-            'from'       => $request->from,
-            'to'         => $request->to,
+            'from'       => $from,
+            'to'         => $to,
         ])->setPaper('A4', 'portrait');
 
-        return $pdf->download('laporan-transaksi.pdf');
+        return $pdf->download('laporan-silit-laundry-' . $from . '.pdf');
     }
 }

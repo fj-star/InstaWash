@@ -28,7 +28,14 @@
                     @forelse ($pelanggans as $index => $pelanggan)
                         <tr>
                             <td>{{ $index + 1 }}</td>
-                            <td>{{ $pelanggan->user->name }}</td>
+                            {{-- Bagian Nama Pelanggan --}}
+<td class="align-middle">
+    <div class="font-weight-bold text-dark">{{ $pelanggan->user->name }}</div>
+    {{-- Badge Jabatan Pelanggan --}}
+    <span class="badge badge-success text-uppercase" style="font-size: 10px; padding: 2px 8px;">
+        <i class="fas fa-user fa-xs mr-1"></i> Pelanggan
+    </span>
+</td>
                             <td>{{ $pelanggan->user->email }}</td>
                             <td>{{ $pelanggan->no_hp }}</td>
                             <td>{{ $pelanggan->alamat }}</td>
@@ -41,7 +48,7 @@
                                       method="POST" class="d-inline delete-form">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="button" class="btn btn-danger btn-sm btn-delete">
+                                    <button type="sumbit" class="btn btn-danger btn-sm btn-delete">
                                         Hapus
                                     </button>
                                 </form>

@@ -23,7 +23,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-         if (app()->environment('local')) {
+         if (str_contains(request()->getHost(), 'ngrok-free.app')) {
         URL::forceScheme('https');
     }
         // Directive untuk format Rupiah

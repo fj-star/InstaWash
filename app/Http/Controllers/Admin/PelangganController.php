@@ -86,10 +86,15 @@ class PelangganController extends Controller
             ->with('success', 'Pelanggan berhasil diperbarui.');
     }
 
-    public function destroy(Pelanggan $pelanggan)
-    {
-        $pelanggan->user->delete(); // akan otomatis hapus pelanggan karena FK cascade
-        return redirect()->route('admin.pelanggans.index')
-            ->with('success', 'Pelanggan berhasil dihapus.');
-    }
+    public function destroy($id)
+{
+    // Cari dulu datanya di tabel Pelanggan
+    $pelanggan = Pelanggan::findOrFail($id);
+    
+    // Ambil ID User-nya, lalu hapus User-nya
+    // Karena di migration ada cascade, data di tabel pelanggan akan ikut terhapus
+    User::findOrFail($pelanggan->user_id)->delete();
+
+    return back()->with('success', 'Pelanggan dan akunnya berhasil dihapus, Tuan!');
+}
 }

@@ -77,9 +77,12 @@ Route::prefix('admin')
     ->middleware(['auth','role:admin'])
     ->group(function () {
 
+    Route::get('/api/absensi-stats', [AdminAbsensi::class, 'getStats']);
         Route::get('/dashboard', [AdminDashboard::class, 'index'])->name('dashboard');
         Route::get('/absensi', [AdminAbsensi::class, 'index'])->name('absensi.index');
         Route::resource('absensi', AdminAbsensi::class)->except(['create', 'store']);
+        Route::get('/admin/absensi/{id}/edit', [AdminAbsensi::class, 'edit'])->name('admin.absensi.edit');
+Route::put('/admin/absensi/{id}', [AdminAbsensi::class, 'update'])->name('admin.absensi.update');
         Route::post('/admin/absensi/manual', [AdminAbsensi::class, 'storeManual'])->name('absensi.store_manual');
 Route::post('/absensi', [AdminAbsensi::class, 'store'])->name('absensi.store');
         Route::resource('pelanggans', AdminPelanggan::class);

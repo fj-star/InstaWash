@@ -2,161 +2,160 @@
 
 @section('content')
 <div class="container-fluid">
-
-    {{-- HEADER --}}
-    <div class="mb-4">
-        <h3 class="fw-bold">Dashboard Owner</h3>
-        <p class="text-muted mb-0">
-            Ringkasan pendapatan & aktivitas terbaru
-            <span class="ms-2">({{ now()->format('F Y') }})</span>
-        </p>
+    {{-- HEADER GAGAH --}}
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800 font-weight-bold">Executive Overview</h1>
+        <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+            <i class="fas fa-download fa-sm text-white-50"></i> Generate Report
+        </a>
     </div>
 
-    {{-- STAT CARD --}}
-    <div class="row mb-4">
-
-        <div class="col-md-6 mb-3 mb-md-0">
-            <div class="card shadow-sm border-0 h-100">
+    {{-- ROW 1: STATS CARDS DENGAN ICON GLOW --}}
+    <div class="row">
+        {{-- Omset Card --}}
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2 bg-gradient-white">
                 <div class="card-body">
-                    <h6 class="text-muted mb-1">Total Transaksi</h6>
-                    <h3 class="fw-bold mb-0">
-                        {{ $total_transaksi ?? 0 }}
-                    </h3>
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Earnings (Monthly)</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">Rp {{ number_format($omset_bulan_ini,0,',','.') }}</div>
+                            <div class="mt-2 mb-0 text-muted text-xs">
+                                <span class="text-success mr-2"><i class="fa fa-arrow-up"></i> High Performance</span>
+                            </div>
+                        </div>
+                        <div class="col-auto"><i class="fas fa-money-bill-wave fa-2x text-primary"></i></div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-6">
-            <div class="card shadow-sm border-0 h-100">
+        {{-- Pesanan Aktif dengan Animasi Pulse (via CSS) --}}
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
                 <div class="card-body">
-                    <h6 class="text-muted mb-1">Total Pendapatan</h6>
-                    <h3 class="fw-bold text-success mb-0">
-                        Rp {{ number_format($total_pendapatan ?? 0,0,',','.') }}
-                    </h3>
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Active Orders</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $pesanan_proses }} Unit</div>
+                        </div>
+                        <div class="col-auto"><i class="fas fa-spinner fa-spin fa-2x text-info"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {{-- ... tambahkan card lain dengan style serupa ... --}}
+    </div>
+
+    {{-- ROW 2: DUA GRAFIK BERSANDING --}}
+    <div class="row">
+        {{-- Area Chart --}}
+        <div class="col-xl-8 col-lg-7">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Revenue Growth</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-area" style="height: 320px;">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
 
-    </div>
-
-    {{-- ================= GRAFIK (DI ATAS) ================= --}}
-    <div class="card shadow-sm border-0 mb-4">
-        <div class="card-header bg-white">
-            <h5 class="mb-0">Grafik Pendapatan {{ now()->year }}</h5>
-        </div>
-        <div class="card-body">
-            <canvas id="pendapatanChart" style="height:300px"></canvas>
-        </div>
-    </div>
-
-    {{-- ================= TRANSAKSI TERAKHIR (DI BAWAH) ================= --}}
-    <div class="card shadow-sm border-0">
-        <div class="card-header bg-white d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Transaksi Terakhir</h5>
-            <small class="text-muted">
-                Menampilkan {{ $transaksis->count() ?? 0 }} data terakhir
-            </small>
-        </div>
-
-        <div class="card-body table-responsive">
-            <table class="table table-bordered table-hover align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th>#</th>
-                        <th>Pelanggan</th>
-                        <th>Total</th>
-                        <th>Status</th>
-                        <th>Tanggal</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    @forelse($transaksis as $t)
-                        @php
-                            $statusColor = match($t->status) {
-                                'pending' => 'warning',
-                                'proses'  => 'info',
-                                'selesai' => 'success',
-                                default   => 'secondary',
-                            };
-                        @endphp
-
-                        <tr>
-                            <td>{{ $loop->iteration }}</td>
-                            <td>{{ $t->user->name ?? '-' }}</td>
-                            <td>Rp {{ number_format($t->total_harga ?? 0,0,',','.') }}</td>
-                            <td>
-                                <span class="badge bg-{{ $statusColor }}">
-                                    {{ ucfirst($t->status ?? '-') }}
-                                </span>
-                            </td>
-                            <td>{{ optional($t->created_at)->format('d M Y') }}</td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="5" class="text-center text-muted py-4">
-                                Belum ada transaksi
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+        {{-- Donut Chart --}}
+        <div class="col-xl-4 col-lg-5">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Order Composition</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-pie pt-4 pb-2" style="height: 260px;">
+                        <canvas id="orderPieChart"></canvas>
+                    </div>
+                    <div class="mt-4 text-center small">
+                        <span class="mr-2"><i class="fas fa-circle text-primary"></i> Selesai</span>
+                        <span class="mr-2"><i class="fas fa-circle text-success"></i> Proses</span>
+                        <span class="mr-2"><i class="fas fa-circle text-warning"></i> Pending</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-
 </div>
-@endsection
-
-{{-- SCRIPT --}}
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    const rawData = @json($chartData ?? []);
+    // --- 1. AMBIL DATA DENGAN CARA PALING AMAN ---
+    const rawChartData = {{ \Illuminate\Support\Js::from($chartData) }};
+    const rawStatusData = {{ \Illuminate\Support\Js::from($statusData) }};
 
+    // --- 2. LOGIKA MAPPING BULAN ---
     const labels = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
-    const values = Array(12).fill(0);
+    const revenueValues = Array(12).fill(0);
 
-    rawData.forEach(item => {
-        values[item.bulan - 1] = item.total;
-    });
+    // Pastikan rawChartData adalah array sebelum looping
+    if (Array.isArray(rawChartData)) {
+        rawChartData.forEach(item => {
+            revenueValues[item.bulan - 1] = parseFloat(item.total);
+        });
+    }
 
-    const ctx = document.getElementById('pendapatanChart');
-
-    if (ctx) {
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Pendapatan',
-                    data: values,
-                    borderRadius: 6,
-                    maxBarThickness: 40
-                }]
-            },
-            options: {
-                maintainAspectRatio: false,
-                responsive: true,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: ctx =>
-                                'Rp ' + ctx.raw.toLocaleString('id-ID')
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: value =>
-                                'Rp ' + value.toLocaleString('id-ID')
-                        }
-                    }
-                }
+    // --- 3. LOGIKA MAPPING STATUS ---
+    let statusCounts = { 'selesai': 0, 'proses': 0, 'pending': 0 };
+    if (Array.isArray(rawStatusData)) {
+        rawStatusData.forEach(item => {
+            if (statusCounts.hasOwnProperty(item.status)) {
+                statusCounts[item.status] = item.total;
             }
         });
     }
+
+    // --- 4. RENDER LINE CHART (REVENUE) ---
+    const ctxLine = document.getElementById('revenueChart').getContext('2d');
+    const lineGradient = ctxLine.createLinearGradient(0, 0, 0, 400);
+    lineGradient.addColorStop(0, 'rgba(78, 115, 223, 0.4)');
+    lineGradient.addColorStop(1, 'rgba(78, 115, 223, 0)');
+
+    new Chart(ctxLine, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: "Revenue",
+                fill: true,
+                backgroundColor: lineGradient,
+                borderColor: "rgba(78, 115, 223, 1)",
+                tension: 0.4,
+                data: revenueValues,
+            }]
+        },
+        options: { 
+            maintainAspectRatio: false, 
+            plugins: { 
+                legend: { display: false } 
+            } 
+        }
+    });
+
+    // --- 5. RENDER DONUT CHART ---
+    const ctxPie = document.getElementById('orderPieChart').getContext('2d');
+    new Chart(ctxPie, {
+        type: 'doughnut',
+        data: {
+            labels: ["Selesai", "Proses", "Pending"],
+            datasets: [{
+                data: [statusCounts.selesai, statusCounts.proses, statusCounts.pending],
+                backgroundColor: ['#4e73df', '#1cc88a', '#f6c23e'],
+            }],
+        },
+        options: { 
+            maintainAspectRatio: false, 
+            cutout: '75%', 
+            plugins: { legend: { display: false } } 
+        }
+    });
 </script>
 @endpush
+@endsection

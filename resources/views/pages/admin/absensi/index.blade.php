@@ -148,4 +148,21 @@
         </div>
     </div>
 </div>
+
+<script>
+    function updateStats() {
+        fetch('/api/absensi-stats')
+            .then(response => response.json())
+            .then(data => {
+                // Update angka di kartu stats (Sesuaikan ID-nya)
+                document.getElementById('stat-total').innerText = data.total_karyawan + ' Orang';
+                document.getElementById('stat-hadir').innerText = data.hadir;
+                document.getElementById('stat-terlambat').innerText = data.terlambat;
+                document.getElementById('stat-izin').innerText = data.izin;
+            });
+    }
+
+    // Jalankan setiap 5 detik
+    setInterval(updateStats, 5000);
+</script>
 @endsection

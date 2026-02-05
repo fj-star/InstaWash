@@ -33,7 +33,14 @@
                         @forelse($karyawans as $karyawan)
                             <tr>
                                 <td class="text-center">{{ $loop->iteration }}</td>
-                                <td class="font-weight-bold">{{ $karyawan->name }}</td>
+                                {{-- Bagian Nama Karyawan --}}
+<td class="align-middle">
+    <div class="font-weight-bold text-primary">{{ $karyawan->name }}</div>
+    {{-- Badge Jabatan Karyawan --}}
+    <span class="badge badge-info text-uppercase" style="font-size: 10px; padding: 2px 8px;">
+        <i class="fas fa-user-tie fa-xs mr-1"></i> Karyawan
+    </span>
+</td>
                                 <td>
                                     <i class="fas fa-envelope fa-xs"></i> {{ $karyawan->email }} <br>
                                     <i class="fas fa-phone fa-xs"></i> {{ $karyawan->no_hp ?? '-' }}
