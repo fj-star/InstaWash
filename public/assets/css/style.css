@@ -540,3 +540,74 @@ body {
     cursor: pointer;
     animation: shake 0.5s;
 }
+
+
+/* Layanan kami */
+.layanan {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    max-width: 950px;
+    margin: auto;
+    animation: bounce 1s infinite;
+    
+}
+.card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0px 1px 5px rgba(0,0,0,0.1);
+    
+}
+.card p {
+    margin-top: 8px;
+    font-size: 14px;
+    
+    
+}
+
+#layanan .card img {
+  animation: float 2.5s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* patner kami */
+
+.partner-section {
+    padding: 50px 0;
+    text-align: center;
+}
+
+.partner-section .section-title {
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 30px;
+    color:#2c3e50;
+}
+
+.partner-logos {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 60px;
+    flex-wrap: wrap;
+}
+
+.partner-logos img {
+    height: 50px;
+    object-fit: contain;
+    transition: 0.3s ease;
+    filter: grayscale(0);
+}
+
+.partner-logos img:hover {
+    transform: scale(1.05);
+}

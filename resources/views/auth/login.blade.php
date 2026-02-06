@@ -104,7 +104,7 @@
         Swal.fire({
             icon: 'error',
             title: 'Login Gagal',
-            text: 'Email atau password yang Tuan masukkan salah.',
+            text: 'Email atau password yang kamu masukkan salah.',
             confirmButtonColor: '#3b82f6'
         });
     </script>
